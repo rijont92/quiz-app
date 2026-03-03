@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { levels } from '../data/levels'
 
 function QuizPanel({ activeLevelId, onResetLevel }) {
@@ -12,6 +12,36 @@ function QuizPanel({ activeLevelId, onResetLevel }) {
   const [isCorrect, setIsCorrect] = useState(null)
   const [score, setScore] = useState(0)
   const [completed, setCompleted] = useState(false)
+
+  const perLevelStateRef = useRef({})
+
+  useEffect(() => {
+    const saved = perLevelStateRef.current[activeLevelId]
+
+    if (saved) {
+      setCurrentIndex(saved.currentIndex)
+      setSelectedIndex(saved.selectedIndex)
+      setIsCorrect(saved.isCorrect)
+      setScore(saved.score)
+      setCompleted(saved.completed)
+    } else {
+      setCurrentIndex(0)
+      setSelectedIndex(null)
+      setIsCorrect(null)
+      setScore(0)
+      setCompleted(false)
+    }
+  }, [activeLevelId])
+
+  useEffect(() => {
+    perLevelStateRef.current[activeLevelId] = {
+      currentIndex,
+      selectedIndex,
+      isCorrect,
+      score,
+      completed,
+    }
+  }, [activeLevelId, currentIndex, selectedIndex, isCorrect, score, completed])
 
   const totalQuestions = level.questions.length
   const currentQuestion = level.questions[currentIndex]
