@@ -78,6 +78,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  animation: panel-fade-in 260ms ease-out;
 }
 
 .panel--quiz {
@@ -317,11 +318,13 @@
 .option--correct {
   border-color: rgba(34, 197, 94, 0.9);
   background: linear-gradient(135deg, rgba(22, 163, 74, 0.15), rgba(15, 23, 42, 0.95));
+  animation: option-correct-pop 260ms ease-out;
 }
 
 .option--wrong {
   border-color: rgba(239, 68, 68, 0.9);
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(15, 23, 42, 0.95));
+  animation: option-wrong-shake 320ms ease-out;
 }
 
 .result-card {
@@ -370,21 +373,77 @@
   background: #6366f1;
   border-color: #6366f1;
   color: white;
+  box-shadow: 0 14px 30px rgba(79, 70, 229, 0.35);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 120ms ease;
 }
 
 .btn-primary:hover {
   background: #4f46e5;
   border-color: #4f46e5;
+  box-shadow: 0 18px 40px rgba(79, 70, 229, 0.45);
+  transform: translateY(-1px);
 }
 
 .btn-ghost {
   background: transparent;
   border-color: rgba(148, 163, 184, 0.7);
   color: #e5e7eb;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 120ms ease;
 }
 
 .btn-ghost:hover {
   border-color: #e5e7eb;
+  background: rgba(15, 23, 42, 0.85);
+  transform: translateY(-1px);
+}
+
+@keyframes panel-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes option-correct-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes option-wrong-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-3px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
 }
 
 @media (max-width: 880px) {
