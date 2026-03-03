@@ -50,7 +50,7 @@ function QuizPanel({ activeLevelId, onResetLevel }) {
 
   if (!currentQuestion) {
     return (
-      <section className="panel">
+      <section className="panel panel--quiz">
         <div className="panel-header">
           <h2 className="panel-title">No questions yet</h2>
           <p className="panel-subtitle">
@@ -64,7 +64,7 @@ function QuizPanel({ activeLevelId, onResetLevel }) {
   }
 
   return (
-    <section className="panel">
+    <section className="panel panel--quiz" style={{ '--level-color': level.color }}>
       <div className="panel-header panel-header--row">
         <div>
           <h2 className="panel-title">Level: {level.label}</h2>
