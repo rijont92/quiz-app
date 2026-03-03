@@ -1,0 +1,167 @@
+import { useMemo, useState } from 'react'
+import { levels } from '../data/levels'
+
+function QuizPanel({ activeLevelId, onResetLevel }) {
+  const level = useMemo(
+    () => levels.find((item) => item.id === activeLevelId) ?? levels[0],
+    [activeLevelId],
+  )
+
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [selectedIndex, setSelectedIndex] = useState(null)
+  const [isCorrect, setIsCorrect] = useState(null)
+  const [score, setScore] = useState(0)
+  const [completed, setCompleted] = useState(false)
+
+  const totalQuestions = level.questions.length
+  const currentQuestion = level.questions[currentIndex]
+  const progressPercent = Math.round(((currentIndex + (completed ? 1 : 0)) / totalQuestions) * 100)
+
+  function handleOptionClick(optionIndex) {
+    if (selectedIndex !== null || completed) return
+
+    const correct = optionIndex === currentQuestion.answerIndex
+    setSelectedIndex(optionIndex)
+    setIsCorrect(correct)
+    if (correct) {
+      setScore((prev) => prev + 1)
+    }
+  }
+
+  function handleNext() {
+    if (currentIndex === totalQuestions - 1) {
+      setCompleted(true)
+      return
+    }
+
+    setCurrentIndex((prev) => prev + 1)
+    setSelectedIndex(null)
+    setIsCorrect(null)
+  }
+
+  function handleRestartLevel() {
+    setCurrentIndex(0)
+    setSelectedIndex(null)
+    setIsCorrect(null)
+    setScore(0)
+    setCompleted(false)
+    if (onResetLevel) onResetLevel()
+  }
+
+  if (!currentQuestion) {
+    return (
+      <section className="panel">
+        <div className="panel-header">
+          <h2 className="panel-title">No questions yet</h2>
+          <p className="panel-subtitle">
+            This level does not have any questions configured.
+            <br />
+            {/* TODO: add UI to let admins or editors add questions directly from the app. */}
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="panel">
+      <div className="panel-header panel-header--row">
+        <div>
+          <h2 className="panel-title">Level: {level.label}</h2>
+          <p className="panel-subtitle">
+            Question {currentIndex + 1} of {totalQuestions}
+          </p>
+        </div>
+        <div className="pill-group">
+          <span className="pill pill--ghost">
+            Score: <strong>{score}</strong>
+          </span>
+          <span className="pill pill--ghost">
+            Progress: <strong>{progressPercent}%</strong>
+          </span>
+        </div>
+      </div>
+
+      <div className="progress-track" aria-hidden="true">
+        <div
+          className="progress-fill"
+          style={{ width: `${progressPercent}%`, backgroundColor: level.color }}
+        />
+      </div>
+
+      {!completed && (
+        <>
+          <div className="question-card">
+            <p className="question-label">Question</p>
+            <p className="question-text">{currentQuestion.question}</p>
+          </div>
+
+          <div className="options-grid">
+            {currentQuestion.options.map((option, index) => {
+              const isSelected = index === selectedIndex
+              const isRight = index === currentQuestion.answerIndex
+
+              let stateClass = ''
+              if (selectedIndex !== null) {
+                if (isRight) stateClass = 'option--correct'
+                else if (isSelected && !isRight) stateClass = 'option--wrong'
+              }
+
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  className={`option ${stateClass}`}
+                  onClick={() => handleOptionClick(index)}
+                  disabled={selectedIndex !== null}
+                >
+                  <span className="option-index">{index + 1}</span>
+                  <span className="option-label">{option}</span>
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {completed && (
+        <div className="result-card">
+          <h3 className="result-title">Level complete 🎉</h3>
+          <p className="result-score">
+            You scored <strong>{score}</strong> out of <strong>{totalQuestions}</strong>
+          </p>
+          <p className="result-helper">
+            {/* TODO: show more detailed analytics here (accuracy %, time per question, streaks, etc.). */}
+            This is a simple summary for now. Expand this area with charts, streaks, and insights.
+          </p>
+        </div>
+      )}
+
+      <div className="panel-actions">
+        {!completed && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleNext}
+            disabled={selectedIndex === null}
+          >
+            {currentIndex === totalQuestions - 1 ? 'Finish level' : 'Next question'}
+          </button>
+        )}
+
+        {completed && (
+          <button type="button" className="btn btn-primary" onClick={handleRestartLevel}>
+            Restart level
+          </button>
+        )}
+
+        <button type="button" className="btn btn-ghost" onClick={handleRestartLevel}>
+          Change level
+        </button>
+      </div>
+    </section>
+  )
+}
+
+export default QuizPanel
+
