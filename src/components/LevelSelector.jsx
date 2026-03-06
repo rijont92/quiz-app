@@ -1,6 +1,4 @@
-import { levels } from '../data/levels'
-
-function LevelSelector({ currentLevelId, onSelectLevel }) {
+function LevelSelector({ levels, currentLevelId, onSelectLevel, isLoading, error }) {
   return (
     <section className="panel">
       <div className="panel-header">
@@ -9,6 +7,20 @@ function LevelSelector({ currentLevelId, onSelectLevel }) {
           Start simple or jump straight into a challenge. You can always change levels later.
         </p>
       </div>
+
+      {isLoading && (
+        <p className="panel-subtitle">Loading levels...</p>
+      )}
+
+      {error && !isLoading && (
+        <p className="panel-subtitle" style={{ color: '#fca5a5' }}>
+          {error}
+        </p>
+      )}
+
+      {!isLoading && !error && levels.length === 0 && (
+        <p className="panel-subtitle">No levels available.</p>
+      )}
 
       <div className="level-grid">
         {levels.map((level) => {

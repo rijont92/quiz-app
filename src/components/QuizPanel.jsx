@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { levels } from '../data/levels'
 
-function QuizPanel({ activeLevelId, onResetLevel }) {
+function QuizPanel({ levels, activeLevelId, isLoading, error, onResetLevel }) {
   const level = useMemo(
     () => levels.find((item) => item.id === activeLevelId) ?? levels[0],
-    [activeLevelId],
+    [activeLevelId, levels],
   )
 
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -12,6 +11,15 @@ function QuizPanel({ activeLevelId, onResetLevel }) {
   const [isCorrect, setIsCorrect] = useState(null)
   const [score, setScore] = useState(0)
   const [completed, setCompleted] = useState(false)
+
+  useEffect(() => {
+    if (!level) return
+    setCurrentIndex(0)
+    setSelectedIndex(null)
+    setIsCorrect(null)
+    setScore(0)
+    setCompleted(false)
+  }, [level?.id])
 
   const perLevelStateRef = useRef({})
 
@@ -42,6 +50,45 @@ function QuizPanel({ activeLevelId, onResetLevel }) {
       completed,
     }
   }, [activeLevelId, currentIndex, selectedIndex, isCorrect, score, completed])
+
+  if (isLoading) {
+    return (
+      <section className="panel panel--quiz">
+        <div className="panel-header">
+          <h2 className="panel-title">Loading questions...</h2>
+          <p className="panel-subtitle">Fetching the latest questions for you.</p>
+        </div>
+      </section>
+    )
+  }
+
+  if (error) {
+    return (
+      <section className="panel panel--quiz">
+        <div className="panel-header">
+          <h2 className="panel-title">Something went wrong</h2>
+          <p className="panel-subtitle" style={{ color: '#fca5a5' }}>
+            {error}
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  if (!level || !level.questions || level.questions.length === 0) {
+    return (
+      <section className="panel panel--quiz">
+        <div className="panel-header">
+          <h2 className="panel-title">No questions yet</h2>
+          <p className="panel-subtitle">
+            This level does not have any questions configured.
+            <br />
+            {/* TODO: add UI to let admins or editors add questions directly from the app. */}
+          </p>
+        </div>
+      </section>
+    )
+  }
 
   const totalQuestions = level.questions.length
   const currentQuestion = level.questions[currentIndex]
@@ -76,21 +123,6 @@ function QuizPanel({ activeLevelId, onResetLevel }) {
     setScore(0)
     setCompleted(false)
     if (onResetLevel) onResetLevel()
-  }
-
-  if (!currentQuestion) {
-    return (
-      <section className="panel panel--quiz">
-        <div className="panel-header">
-          <h2 className="panel-title">No questions yet</h2>
-          <p className="panel-subtitle">
-            This level does not have any questions configured.
-            <br />
-            {/* TODO: add UI to let admins or editors add questions directly from the app. */}
-          </p>
-        </div>
-      </section>
-    )
   }
 
   return (
