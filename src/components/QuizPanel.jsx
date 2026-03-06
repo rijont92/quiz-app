@@ -83,7 +83,7 @@ function QuizPanel({ levels, activeLevelId, isLoading, error, onResetLevel }) {
           <p className="panel-subtitle">
             This level does not have any questions configured.
             <br />
-            {/* TODO: add UI to let admins or editors add questions directly from the app. */}
+       
           </p>
         </div>
       </section>

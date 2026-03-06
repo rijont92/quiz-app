@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 import Layout from './components/Layout.jsx'
 import LevelSelector from './components/LevelSelector.jsx'
 import QuizPanel from './components/QuizPanel.jsx'
+import Login from './components/Login.jsx'
 
 function App() {
+  const [user, setUser] = useState(null)
   const [levels, setLevels] = useState([])
   const [activeLevelId, setActiveLevelId] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -38,6 +41,7 @@ function App() {
         if (!isMounted) return
 
         setLevels(mappedLevels)
+
         if (!activeLevelId && mappedLevels.length > 0) {
           setActiveLevelId(mappedLevels[0].id)
         }
@@ -56,9 +60,9 @@ function App() {
     return () => {
       isMounted = false
     }
-  }, [activeLevelId])
+  }, [])
 
-  return (
+  const quizElement = (
     <Layout>
       <LevelSelector
         levels={levels}
@@ -76,7 +80,14 @@ function App() {
       />
     </Layout>
   )
+
+  return (
+    <Routes>
+      <Route path="/login" element={<Login onLogin={setUser} />} />
+      <Route path="/create" element={quizElement} />
+      <Route path="*" element={<Navigate to="/create" replace />} />
+    </Routes>
+  )
 }
 
 export default App
-
