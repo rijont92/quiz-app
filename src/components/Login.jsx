@@ -16,7 +16,7 @@ function Login({ onLogin }) {
 
     if (email === "admin@gmail.com" && password === "1234") {
       onLogin(email);
-      navigate("/create");
+      navigate("/admin/questions");
     } else {
       alert("Invalid credentials!");
     }
