@@ -44,7 +44,6 @@ function LevelSelector({ levels, currentLevelId, onSelectLevel, isLoading, error
         })}
       </div>
 
-      {/* TODO: add filters (topic, difficulty) and a way to preview question count per level. */}
     </section>
   )
 }

@@ -5,6 +5,8 @@ import Layout from './components/Layout.jsx'
 import LevelSelector from './components/LevelSelector.jsx'
 import QuizPanel from './components/QuizPanel.jsx'
 import Login from './components/Login.jsx'
+import AdminQuestions from './components/AdminQuestions.jsx'
+import { fetchQuestions } from './utils/api'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -12,50 +14,46 @@ function App() {
   const [activeLevelId, setActiveLevelId] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [questions, setQuestions] = useState([])
 
   useEffect(() => {
     let isMounted = true
 
-    async function loadLevels() {
+    async function loadQuestionsAndLevels() {
       setIsLoading(true)
       setError(null)
 
       try {
-        const response = await fetch('https://69a6da012cd1d055268f1b99.mockapi.io/levels')
-
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`)
-        }
-
-        const data = await response.json()
-
-        if (!Array.isArray(data)) {
-          throw new Error('Unexpected response format')
-        }
-
-        const mappedLevels = data.map((item) => ({
-          ...item,
-          id: item.slug,
-        }))
+        const data = await fetchQuestions()
+        if (!Array.isArray(data)) throw new Error('Unexpected response format')
 
         if (!isMounted) return
+
+        setQuestions(data)
+
+        const map = {}
+        data.forEach(q => {
+          const slug = q.level || 'unknown'
+          if (!map[slug]) map[slug] = { id: slug, slug, label: slug.charAt(0).toUpperCase() + slug.slice(1), description: '', color: '#999', questions: [] }
+          map[slug].questions.push(q)
+        })
+        const mappedLevels = Object.values(map)
+
+        const colorMap = { beginner: '#22c55e', intermediate: '#f97316', advanced: '#6366f1' }
+        mappedLevels.forEach(l => { l.color = colorMap[l.slug] || l.color })
 
         setLevels(mappedLevels)
 
-        if (!activeLevelId && mappedLevels.length > 0) {
-          setActiveLevelId(mappedLevels[0].id)
-        }
+        if (!activeLevelId && mappedLevels.length > 0) setActiveLevelId(mappedLevels[0].id)
       } catch (err) {
         if (!isMounted) return
-        setError(err.message || 'Failed to load levels.')
+        setError(err.message || 'Failed to load questions.')
       } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+        if (isMounted) setIsLoading(false)
       }
     }
 
-    loadLevels()
+    loadQuestionsAndLevels()
 
     return () => {
       isMounted = false
@@ -73,6 +71,7 @@ function App() {
       />
       <QuizPanel
         levels={levels}
+        questions={questions}
         activeLevelId={activeLevelId}
         isLoading={isLoading}
         error={error}
@@ -85,7 +84,8 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login onLogin={setUser} />} />
       <Route path="/create" element={quizElement} />
-      <Route path="*" element={<Navigate to="/create" replace />} />
+      <Route path="/admin/questions" element={<AdminQuestions />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
 }

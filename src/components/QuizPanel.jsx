@@ -1,10 +1,54 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { fetchQuestions } from '../utils/api'
 
-function QuizPanel({ levels, activeLevelId, isLoading, error, onResetLevel }) {
-  const level = useMemo(
-    () => levels.find((item) => item.id === activeLevelId) ?? levels[0],
-    [activeLevelId, levels],
-  )
+function QuizPanel({ levels = [], questions = [], activeLevelId, isLoading, error, onResetLevel }) {
+  const [flatQuestions, setFlatQuestions] = useState([])
+  const [loadingQuestions, setLoadingQuestions] = useState(false)
+  const [questionsError, setQuestionsError] = useState(null)
+  const fetchedRef = useRef(false)
+
+  useEffect(() => {
+    const needsFetch = !(levels && levels.length && levels[0].questions) && (!questions || questions.length === 0)
+    if (!needsFetch || fetchedRef.current) return
+    fetchedRef.current = true
+    setLoadingQuestions(true)
+    fetchQuestions()
+      .then(data => {
+        setFlatQuestions(data)
+        setLoadingQuestions(false)
+      })
+      .catch(err => {
+        console.error('Failed to load questions', err)
+        setQuestionsError('Failed to load questions')
+        setLoadingQuestions(false)
+      })
+  }, [levels, questions])
+
+  const sourceQuestions = (questions && questions.length) ? questions : flatQuestions
+  const firstQuestionLevel = sourceQuestions && sourceQuestions.length ? sourceQuestions[0].level : undefined
+  const defaultLevelFromLevels = levels && levels.length ? levels[0].slug : undefined
+  const chosenLevelId = activeLevelId ?? firstQuestionLevel ?? defaultLevelFromLevels
+
+  const level = useMemo(() => {
+    if (levels && levels.length && levels[0].questions) {
+      return levels.find((item) => item.slug === (activeLevelId ?? chosenLevelId)) ?? levels[0]
+    }
+
+    if (sourceQuestions && sourceQuestions.length) {
+      const items = sourceQuestions.filter((q) => String(q.level) === String(activeLevelId ?? chosenLevelId))
+      return {
+        slug: activeLevelId ?? chosenLevelId,
+        label: (levels.find?.(l => l.slug === (activeLevelId ?? chosenLevelId))?.label) || (activeLevelId ?? chosenLevelId) || 'Unknown',
+        description: '',
+        color: '#22c55e',
+        questions: items,
+      }
+    }
+
+    return undefined
+  }, [activeLevelId, chosenLevelId, levels, sourceQuestions])
+
+  const effectiveLevelId = level?.slug ?? chosenLevelId
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedIndex, setSelectedIndex] = useState(null)
@@ -19,12 +63,12 @@ function QuizPanel({ levels, activeLevelId, isLoading, error, onResetLevel }) {
     setIsCorrect(null)
     setScore(0)
     setCompleted(false)
-  }, [level?.id])
+  }, [level?.slug])
 
   const perLevelStateRef = useRef({})
 
   useEffect(() => {
-    const saved = perLevelStateRef.current[activeLevelId]
+    const saved = perLevelStateRef.current[effectiveLevelId]
 
     if (saved) {
       setCurrentIndex(saved.currentIndex)
@@ -39,19 +83,19 @@ function QuizPanel({ levels, activeLevelId, isLoading, error, onResetLevel }) {
       setScore(0)
       setCompleted(false)
     }
-  }, [activeLevelId])
+  }, [effectiveLevelId])
 
   useEffect(() => {
-    perLevelStateRef.current[activeLevelId] = {
+    perLevelStateRef.current[effectiveLevelId] = {
       currentIndex,
       selectedIndex,
       isCorrect,
       score,
       completed,
     }
-  }, [activeLevelId, currentIndex, selectedIndex, isCorrect, score, completed])
+  }, [effectiveLevelId, currentIndex, selectedIndex, isCorrect, score, completed])
 
-  if (isLoading) {
+  if (isLoading || loadingQuestions) {
     return (
       <section className="panel panel--quiz">
         <div className="panel-header">
@@ -62,13 +106,13 @@ function QuizPanel({ levels, activeLevelId, isLoading, error, onResetLevel }) {
     )
   }
 
-  if (error) {
+  if (error || questionsError) {
     return (
       <section className="panel panel--quiz">
         <div className="panel-header">
           <h2 className="panel-title">Something went wrong</h2>
           <p className="panel-subtitle" style={{ color: '#fca5a5' }}>
-            {error}
+            {error || questionsError}
           </p>
         </div>
       </section>
@@ -193,7 +237,6 @@ function QuizPanel({ levels, activeLevelId, isLoading, error, onResetLevel }) {
             You scored <strong>{score}</strong> out of <strong>{totalQuestions}</strong>
           </p>
           <p className="result-helper">
-            {/* TODO: show more detailed analytics here (accuracy %, time per question, streaks, etc.). */}
             This is a simple summary for now. Expand this area with charts, streaks, and insights.
           </p>
         </div>
