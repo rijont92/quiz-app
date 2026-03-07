@@ -10,7 +10,6 @@ function Login({ onLogin }) {
   useEffect(() => {
     const stored = localStorage.getItem('user')
     if (stored) {
-      // already logged in -> go to admin
       navigate('/admin/questions');
     }
   }, [])

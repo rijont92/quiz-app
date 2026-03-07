@@ -21,7 +21,6 @@ function App() {
     if (stored) setUser(stored)
   }, [])
 
-  // reusable refresh function to fetch latest questions and build levels
   async function refreshQuestions() {
     setIsLoading(true)
     setError(null)

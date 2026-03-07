@@ -224,7 +224,6 @@
   background: #0284c7;
 }
 
-/* Top action buttons (Go to Quiz / Logout) */
 .admin-top-actions {
   display: flex;
   gap: 0.75rem;
@@ -277,7 +276,6 @@
   .top-btn { padding: 0.45rem 0.7rem; font-size: 0.9rem; }
 }
 
-/* Add / Save button styles for add-question and add-level forms */
 .admin-add-question-form button[type="submit"],
 .admin-add-level-form button[type="submit"] {
   background: linear-gradient(90deg, #06b6d4 0%, #0ea5e9 50%);
@@ -301,7 +299,6 @@
   box-shadow: 0 12px 32px rgba(14,165,233,0.14);
 }
 
-/* Make the add button full width on small screens */
 @media (max-width: 640px) {
   .admin-add-question-form button[type="submit"],
   .admin-add-level-form button[type="submit"] {
@@ -318,7 +315,6 @@
   padding: 0;
 }
 
-/* login error message used in Login.jsx */
 .login-error {
   margin-top: 0.6rem;
   background: linear-gradient(90deg, #fecaca 0%, #fca5a5 100%);

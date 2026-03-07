@@ -16,14 +16,12 @@ async function localFetchQuestions() {
 
 function AdminQuestions({ user, onLogout, onDataChange }) {
   const navigate = useNavigate();
-  // helper to pick readable text color on top of level color
   const getContrastColor = (hex) => {
     try {
       const h = hex.replace('#','');
       const r = parseInt(h.substring(0,2),16);
       const g = parseInt(h.substring(2,4),16);
       const b = parseInt(h.substring(4,6),16);
-      // relative luminance
       const lum = (0.2126*r + 0.7152*g + 0.0722*b) / 255;
       return lum > 0.55 ? '#06202a' : '#ffffff';
     } catch (e) {
@@ -43,7 +41,6 @@ function AdminQuestions({ user, onLogout, onDataChange }) {
   });
   const api = QUESTIONS_ENDPOINT;
 
-  // helper to reload questions from server and rebuild levels
   const reloadLevels = async () => {
     setLoading(true);
     setError(null);
@@ -99,15 +96,12 @@ function AdminQuestions({ user, onLogout, onDataChange }) {
         .then(res => res.json())
         .then(() => {
           setEditQuestion(null);
-          // refetch latest data from server
           reloadLevels();
-          // notify parent to refresh app data (quiz page)
           if (onDataChange) onDataChange();
         })
         .catch(err => {
           console.error('Failed to persist edited question', err);
           setEditQuestion(null);
-          // try to refresh to ensure consistency
           reloadLevels();
           if (onDataChange) onDataChange();
         });
@@ -133,13 +127,11 @@ function AdminQuestions({ user, onLogout, onDataChange }) {
       fetch(`${api}/${qid}`, { method: 'DELETE' })
         .then(res => {
           if (!res.ok) return Promise.reject('Failed')
-          // reload full list
           reloadLevels();
           if (onDataChange) onDataChange();
         })
         .catch(err => {
           console.error('Failed to delete question', err);
-          // still attempt reload
           reloadLevels();
           if (onDataChange) onDataChange();
         });
@@ -170,7 +162,6 @@ function AdminQuestions({ user, onLogout, onDataChange }) {
       .then(res => res.json())
       .then(created => {
         setAddQuestion({ question: '', options: ['', '', '', ''], answerIndex: 0, difficulty: 'easy', levelSlug: '' });
-        // reload from server to show authoritative data
         reloadLevels();
         if (onDataChange) onDataChange();
       })
