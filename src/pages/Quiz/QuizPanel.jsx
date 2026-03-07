@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { fetchQuestions } from '../utils/api'
+import { fetchQuestions } from '../../utils/api.js'
 
 function QuizPanel({ levels = [], questions = [], activeLevelId, isLoading, error, onResetLevel }) {
   const [flatQuestions, setFlatQuestions] = useState([])

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
-import Layout from './components/Layout.jsx'
-import LevelSelector from './components/LevelSelector.jsx'
-import QuizPanel from './components/QuizPanel.jsx'
-import Login from './components/Login.jsx'
-import AdminQuestions from './components/AdminQuestions.jsx'
-import { fetchQuestions } from './utils/api'
+import Layout from './components/layout/Layout.jsx'
+import LevelSelector from './components/LevelSelector/LevelSelector.jsx'
+import QuizPanel from './pages/Quiz/QuizPanel.jsx'
+import Login from './pages/Login/Login.jsx'
+import AdminQuestions from './pages/Admin/AdminQuestions.jsx'
+import { fetchQuestions } from './utils/api.js'
 
 function App() {
   const [user, setUser] = useState(null)

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import './layout.css';
+import '../../components/layout/layout.css';
 import './AdminQuestions.css';
-import Layout from './Layout';
-import { fetchQuestions, QUESTIONS_ENDPOINT } from '../utils/api';
+import Layout from '../../components/layout/Layout.jsx';
+import { fetchQuestions, QUESTIONS_ENDPOINT } from '../../utils/api.js';
 import { useNavigate } from 'react-router-dom';
 
 
