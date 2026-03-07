@@ -260,9 +260,7 @@ function QuizPanel({ levels = [], questions = [], activeLevelId, isLoading, erro
           </button>
         )}
 
-        <button type="button" className="btn btn-ghost" onClick={handleRestartLevel}>
-          Change level
-        </button>
+      
       </div>
     </section>
   )

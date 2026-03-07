@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import './layout.css'
 
-function Layout({ children }) {
+function Layout({ children, user, onLogout, mainClassName }) {
   const navigate = useNavigate()
+  const mainCls = mainClassName || 'app-main'
 
   return (
     <div className="app-root">
@@ -12,11 +13,22 @@ function Layout({ children }) {
           <span className="app-title">LevelUp</span>
         </div>
         <p className="app-subtitle">Practice, level up, and track your progress.</p>
-        <button className="admin-button" type="button" onClick={() => navigate('/login')}>
-          Admin?
-        </button>
+        <div>
+          {!user ? (
+            <button className="admin-button" type="button" onClick={() => navigate('/login')}>
+              Admin?
+            </button>
+          ) : (
+            <>
+              <button className="admin-button" type="button" onClick={() => navigate('/admin/questions')}>
+                Admin Panel
+              </button>
+             
+            </>
+          )}
+        </div>
       </header>
-      <main className="app-main">{children}</main>
+      <main className={mainCls}>{children}</main>
     </div>
   )
 }

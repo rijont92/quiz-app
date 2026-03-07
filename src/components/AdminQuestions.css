@@ -1,5 +1,4 @@
-.admin-questions-page {
-  max-width: 900px;
+.admin-questions-page-2 {
   margin: 0 auto;
   padding: 2rem;
   color: #e5e7eb;
@@ -67,14 +66,16 @@
 .admin-options-list li {
   padding: 0.2rem 0.7rem;
   border-radius: 6px;
-  margin-bottom: 0.2rem;
-  background: #232946;
+  margin: 0 5px;
+  margin-bottom: 10px;
+  background: #38416d;
   color: #e5e7eb;
   display: inline-block;
+
 }
 
 .admin-option-correct {
-  background: #0ea5e9 !important;
+  background: linear-gradient(90deg, #34d399 0%, #0ea06f 5%) !important;
   color: #fff;
   font-weight: bold;
 }
@@ -128,6 +129,7 @@
   border: 1px solid #374151;
   font-size: 1rem;
   background: #1e293b;
+  width: 100%;
   color: #e5e7eb;
 }
 
@@ -221,3 +223,111 @@
 .admin-edit-actions button[type="submit"]:hover {
   background: #0284c7;
 }
+
+.admin-top-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.top-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.25);
+}
+
+.top-btn:active { transform: translateY(1px); }
+.top-btn:focus { outline: 3px solid rgba(14,165,233,0.18); }
+
+.top-btn--primary {
+  color: #06202a;
+  background: linear-gradient(90deg, #34d399 0%, #10b981 50%);
+  box-shadow: 0 8px 24px rgba(16,185,129,0.12);
+}
+.top-btn--primary:hover { filter: brightness(0.95); }
+
+.top-btn--ghost {
+  background: transparent;
+  color: #e5e7eb;
+  border: 1px solid rgba(148,163,184,0.12);
+}
+
+.top-btn--danger {
+  color: #fff;
+  background: linear-gradient(90deg, #fb7185 0%, #ef4444 100%);
+  box-shadow: 0 8px 24px rgba(239,68,68,0.12);
+}
+.top-btn--danger:hover { filter: brightness(0.95); }
+
+@media (max-width: 640px) {
+  .admin-top-actions {
+    justify-content: space-between;
+  }
+  .top-btn { padding: 0.45rem 0.7rem; font-size: 0.9rem; }
+}
+
+.admin-add-question-form button[type="submit"],
+.admin-add-level-form button[type="submit"] {
+  background: linear-gradient(90deg, #06b6d4 0%, #0ea5e9 50%);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(14,165,233,0.12);
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+  align-self: flex-start;
+  margin-top: 20px;
+}
+
+.admin-add-question-form button[type="submit"]:hover,
+.admin-add-level-form button[type="submit"]:hover {
+  transform: translateY(-2px);
+  filter: brightness(0.98);
+  box-shadow: 0 12px 32px rgba(14,165,233,0.14);
+}
+
+@media (max-width: 640px) {
+  .admin-add-question-form button[type="submit"],
+  .admin-add-level-form button[type="submit"] {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.admin-top-actions {
+  justify-content: flex-start;
+}
+
+.admin-questions-page-2  {
+  padding: 0;
+}
+
+.login-error {
+  margin-top: 0.6rem;
+  background: linear-gradient(90deg, #fecaca 0%, #fca5a5 100%);
+  color: #7f1d1d;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.login-brand {
+  color: #0ea5e9;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 700;
+}
+.login-brand:focus { outline: 3px solid rgba(14,165,233,0.12); border-radius: 4px; }

@@ -3,6 +3,7 @@ import './layout.css';
 import './AdminQuestions.css';
 import Layout from './Layout';
 import { fetchQuestions, QUESTIONS_ENDPOINT } from '../utils/api';
+import { useNavigate } from 'react-router-dom';
 
 
 async function localFetchQuestions() {
@@ -13,7 +14,20 @@ async function localFetchQuestions() {
   }
 }
 
-function AdminQuestions() {
+function AdminQuestions({ user, onLogout, onDataChange }) {
+  const navigate = useNavigate();
+  const getContrastColor = (hex) => {
+    try {
+      const h = hex.replace('#','');
+      const r = parseInt(h.substring(0,2),16);
+      const g = parseInt(h.substring(2,4),16);
+      const b = parseInt(h.substring(4,6),16);
+      const lum = (0.2126*r + 0.7152*g + 0.0722*b) / 255;
+      return lum > 0.55 ? '#06202a' : '#ffffff';
+    } catch (e) {
+      return '#ffffff';
+    }
+  };
   const [levels, setLevels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,34 +39,37 @@ function AdminQuestions() {
     difficulty: 'easy',
     levelSlug: '',
   });
-  const [addLevel, setAddLevel] = useState({
-    slug: '',
-    label: '',
-    description: '',
-    color: '#22c55e',
-  });
-  const [showAddLevel, setShowAddLevel] = useState(false);
   const api = QUESTIONS_ENDPOINT;
 
-  useEffect(() => {
-    localFetchQuestions()
-      .then(questions => {
-        const levelsMap = {};
-        questions.forEach(q => {
-          const slug = q.level || q.levelSlug || 'unknown';
-          if (!levelsMap[slug]) {
-            levelsMap[slug] = { slug, label: slug, description: '', color: '#999', questions: [] };
-          }
-          levelsMap[slug].questions.push(q);
-        });
-        const levelsArray = Object.values(levelsMap);
-        setLevels(levelsArray);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError('Failed to load questions');
-        setLoading(false);
+  const reloadLevels = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const questions = await localFetchQuestions();
+      const levelsMap = {};
+      questions.forEach(q => {
+        const slug = q.level || q.levelSlug || 'unknown';
+        if (!levelsMap[slug]) {
+          levelsMap[slug] = { slug, label: slug, description: '', color: '#999', questions: [] };
+        }
+        levelsMap[slug].questions.push(q);
       });
+      const levelsArray = Object.values(levelsMap);
+      const colorMap = { beginner: '#22c55e', intermediate: '#f97316', advanced: '#6366f1' };
+      levelsArray.forEach(l => {
+        const key = String(l.slug || '').toLowerCase();
+        l.color = colorMap[key] || l.color || '#999';
+      });
+      setLevels(levelsArray);
+    } catch (err) {
+      setError('Failed to load questions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    reloadLevels();
   }, []);
 
   const handleEdit = (levelSlug, q) => {
@@ -79,12 +96,14 @@ function AdminQuestions() {
         .then(res => res.json())
         .then(() => {
           setEditQuestion(null);
-          setLevels(updatedLevels);
+          reloadLevels();
+          if (onDataChange) onDataChange();
         })
         .catch(err => {
           console.error('Failed to persist edited question', err);
           setEditQuestion(null);
-          setLevels(updatedLevels);
+          reloadLevels();
+          if (onDataChange) onDataChange();
         });
     } else {
       console.warn('Skipping network persist for edited question: question has no id');
@@ -106,10 +125,15 @@ function AdminQuestions() {
     });
     if (qid) {
       fetch(`${api}/${qid}`, { method: 'DELETE' })
-        .then(res => res.ok ? setLevels(updatedLevels) : Promise.reject('Failed'))
+        .then(res => {
+          if (!res.ok) return Promise.reject('Failed')
+          reloadLevels();
+          if (onDataChange) onDataChange();
+        })
         .catch(err => {
           console.error('Failed to delete question', err);
-          setLevels(updatedLevels);
+          reloadLevels();
+          if (onDataChange) onDataChange();
         });
     } else {
       setLevels(updatedLevels);
@@ -137,39 +161,45 @@ function AdminQuestions() {
     })
       .then(res => res.json())
       .then(created => {
-        const levelsWithCreated = updatedLevels.map(l => ({
-          ...l,
-          questions: l.questions.map(q => (String(q.id) === String(tempId) ? ({ ...q, id: created.id }) : q)),
-        }));
         setAddQuestion({ question: '', options: ['', '', '', ''], answerIndex: 0, difficulty: 'easy', levelSlug: '' });
-        setLevels(levelsWithCreated);
+        reloadLevels();
+        if (onDataChange) onDataChange();
       })
       .catch(err => {
         console.error('Failed to persist new question', err);
         setAddQuestion({ question: '', options: ['', '', '', ''], answerIndex: 0, difficulty: 'easy', levelSlug: '' });
-        setLevels(updatedLevels);
+        reloadLevels();
+        if (onDataChange) onDataChange();
       });
   };
-  const handleAddLevel = e => {
-    e.preventDefault();
-    setLevels([...levels, { slug: addLevel.slug, label: addLevel.label, description: addLevel.description, color: addLevel.color, questions: [] }]);
-    setAddLevel({ slug: '', label: '', description: '', color: '#22c55e' });
-    setShowAddLevel(false);
-  };
   
-  if (loading) return <Layout><div className="admin-loading">Loading...</div></Layout>;
-  if (error) return <Layout><div className="admin-error">{error}</div></Layout>;
+  if (loading) return <Layout user={user} onLogout={onLogout} mainClassName="app-main2"><div className="admin-loading">Loading...</div></Layout>;
+  if (error) return <Layout user={user} onLogout={onLogout} mainClassName="app-main2"><div className="admin-error">{error}</div></Layout>;
 
   return (
-    <Layout>
-      <div className="admin-questions-page">
+    <Layout user={user} onLogout={onLogout} mainClassName="app-main2">
+      <div className="admin-questions-page admin-questions-page-2">
+        <div className="admin-top-actions">
+          <button className="top-btn top-btn--primary" onClick={() => navigate('/')}>Go to Quiz</button>
+          <button className="top-btn top-btn--danger" onClick={() => { onLogout && onLogout(); navigate('/login') }}>Logout</button>
+        </div>
         <h2>Admin Questions Management</h2>
         {levels.map(level => (
           <section key={level.slug} className="admin-level-card" style={{ borderColor: level.color }}>
             <div className="admin-level-header">
-              <span className="admin-level-pill" style={{ background: level.color }}>{level.label}</span>
-              <span className="admin-level-desc">{level.description}</span>
-            </div>
+              <span
+                className="admin-level-pill"
+                style={{
+                  background: level.color,
+                  color: getContrastColor(level.color),
+                  border: 'none',
+                  boxShadow: 'inset 0 -6px 12px rgba(0,0,0,0.12)'
+                }}
+              >
+                {level.label}
+              </span>
+               <span className="admin-level-desc">{level.description}</span>
+             </div>
             <div className="admin-questions-list">
               {level.questions.map(q => (
                 <div key={q.id} className="admin-question-card">
@@ -258,17 +288,6 @@ function AdminQuestions() {
           </select>
           <button type="submit">Add Question</button>
         </form>
-        <button className="admin-add-level-toggle" onClick={() => setShowAddLevel(v => !v)}>{showAddLevel ? 'Cancel' : 'Add New Level'}</button>
-        {showAddLevel && (
-          <form className="admin-add-level-form" onSubmit={handleAddLevel}>
-            <h3>Add New Level</h3>
-            <input required placeholder="Slug" value={addLevel.slug} onChange={e => setAddLevel({ ...addLevel, slug: e.target.value })} />
-            <input required placeholder="Label" value={addLevel.label} onChange={e => setAddLevel({ ...addLevel, label: e.target.value })} />
-            <input required placeholder="Description" value={addLevel.description} onChange={e => setAddLevel({ ...addLevel, description: e.target.value })} />
-            <input required type="color" value={addLevel.color} onChange={e => setAddLevel({ ...addLevel, color: e.target.value })} />
-            <button type="submit">Add Level</button>
-          </form>
-        )}
       </div>
     </Layout>
   );

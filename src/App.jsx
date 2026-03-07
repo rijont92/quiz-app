@@ -17,51 +17,51 @@ function App() {
   const [questions, setQuestions] = useState([])
 
   useEffect(() => {
-    let isMounted = true
-
-    async function loadQuestionsAndLevels() {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const data = await fetchQuestions()
-        if (!Array.isArray(data)) throw new Error('Unexpected response format')
-
-        if (!isMounted) return
-
-        setQuestions(data)
-
-        const map = {}
-        data.forEach(q => {
-          const slug = q.level || 'unknown'
-          if (!map[slug]) map[slug] = { id: slug, slug, label: slug.charAt(0).toUpperCase() + slug.slice(1), description: '', color: '#999', questions: [] }
-          map[slug].questions.push(q)
-        })
-        const mappedLevels = Object.values(map)
-
-        const colorMap = { beginner: '#22c55e', intermediate: '#f97316', advanced: '#6366f1' }
-        mappedLevels.forEach(l => { l.color = colorMap[l.slug] || l.color })
-
-        setLevels(mappedLevels)
-
-        if (!activeLevelId && mappedLevels.length > 0) setActiveLevelId(mappedLevels[0].id)
-      } catch (err) {
-        if (!isMounted) return
-        setError(err.message || 'Failed to load questions.')
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
-    }
-
-    loadQuestionsAndLevels()
-
-    return () => {
-      isMounted = false
-    }
+    const stored = localStorage.getItem('user')
+    if (stored) setUser(stored)
   }, [])
 
+  async function refreshQuestions() {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const data = await fetchQuestions()
+      if (!Array.isArray(data)) throw new Error('Unexpected response format')
+
+      setQuestions(data)
+
+      const map = {}
+      data.forEach(q => {
+        const slug = q.level || 'unknown'
+        if (!map[slug]) map[slug] = { id: slug, slug, label: slug.charAt(0).toUpperCase() + slug.slice(1), description: '', color: '#999', questions: [] }
+        map[slug].questions.push(q)
+      })
+      const mappedLevels = Object.values(map)
+
+      const colorMap = { beginner: '#22c55e', intermediate: '#f97316', advanced: '#6366f1' }
+      mappedLevels.forEach(l => { l.color = colorMap[l.slug] || l.color })
+
+      setLevels(mappedLevels)
+
+      if (!activeLevelId && mappedLevels.length > 0) setActiveLevelId(mappedLevels[0].id)
+    } catch (err) {
+      setError(err.message || 'Failed to load questions.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    refreshQuestions()
+  }, [])
+
+  const handleLogout = () => {
+    setUser(null)
+    localStorage.removeItem('user')
+  }
+
   const quizElement = (
-    <Layout>
+    <Layout user={user} onLogout={handleLogout}>
       <LevelSelector
         levels={levels}
         currentLevelId={activeLevelId}
@@ -82,9 +82,12 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/login" element={<Login onLogin={setUser} />} />
-      <Route path="/create" element={quizElement} />
-      <Route path="/admin/questions" element={<AdminQuestions />} />
+      <Route path="/login" element={<Login onLogin={(u) => { setUser(u); localStorage.setItem('user', u); }} />} />
+      <Route path="/" element={quizElement} />
+      <Route
+        path="/admin/questions"
+        element={user ? <AdminQuestions user={user} onLogout={handleLogout} onDataChange={refreshQuestions} /> : <Navigate to="/login" replace />}
+      />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
